@@ -1,0 +1,28 @@
+services:
+  app:
+    image: debian:bookworm-slim # Light Debian image to build on top of
+    ports:
+      - "8000:8000" # Any traffic sent to port 8000 on the host will be forwarded to port 8000 on the container
+    volumes:
+      - ./target/debug/:/srv/ # Mount the local target/debug/ directory to /srv/ in the container
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    links:
+      - redis # Garantees that the redis, and redka service is started before the app service
+      - redka
+    command:
+      - "/srv/simple-ribbit" # Run the project binary
+
+
+  redis:
+    image: redis # pull up the official Redis image with the right run command
+  redka:
+      image: nalgeon/redka
+      volumes:
+          - ./db:/data
+      ports:
+          - 6379:6379
+
+volumes:
+  redis-data:
